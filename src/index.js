@@ -22,18 +22,22 @@ async function onSubmit(e) {
     imgApiService.resetPage();
     imgApiService.query = e.currentTarget.searchQuery.value;
 
-    const images = await imgApiService.fetchImages(imgApiService.query);
+    const response = await imgApiService.fetchImages(imgApiService.query);
+    const images = await response.data.hits;
     refs.loadMoreBtn.classList.remove('is-hidden');
 
     if (images.length === 0) {
+      hideMoreBtn();
       return Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
+    Notify.success(`Hooray! We found ${response.data.totalHits} images.`);
     imgApiService.incrementPage();
     await renderUI(images);
-    simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+    refreshSimpleLightBox();
   } catch (error) {
+    hideMoreBtn();
     console.log(error);
   }
 }
@@ -41,17 +45,22 @@ async function onSubmit(e) {
 async function onClick() {
   simpleLightBox.destroy();
   try {
-    const images = await imgApiService.fetchImages(imgApiService.query);
+    const response = await imgApiService.fetchImages(imgApiService.query);
+    const images = await response.data.hits;
+
+    if (response.data.hits.length === 0) {
+      hideMoreBtn();
+      notifyWarning();
+    }
+
     await renderUI(images);
-    simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+    refreshSimpleLightBox();
     imgApiService.incrementPage();
     smoothScroll();
   } catch (error) {
     console.log(error);
-    refs.loadMoreBtn.classList.add('is-hidden');
-    Notify.warning(
-      "We're sorry, but you've reached the end of search results."
-    );
+    hideMoreBtn();
+    notifyWarning();
   }
 }
 
@@ -91,6 +100,18 @@ function smoothScroll() {
     top: cardHeight * 2,
     behavior: 'smooth',
   });
+}
+
+function hideMoreBtn() {
+  refs.loadMoreBtn.classList.add('is-hidden');
+}
+
+function refreshSimpleLightBox() {
+  simpleLightBox = new SimpleLightbox('.gallery a').refresh();
+}
+
+function notifyWarning() {
+  Notify.warning("We're sorry, but you've reached the end of search results.");
 }
 
 function clearGallery() {
