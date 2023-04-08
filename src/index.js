@@ -79,7 +79,9 @@ async function renderUI(images) {
         'beforeend',
         `<a class="gallery__item" href="${largeImageURL}">
         <div class="photo-card">
+        <div class="photo-wrap">
         <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+        </div>
         <div class="info">
         <p class="info-item"><b><span>${likes}</span> Likes</b></p>
         <p class="info-item"><b><span>${views}</span> Views</b></p>
